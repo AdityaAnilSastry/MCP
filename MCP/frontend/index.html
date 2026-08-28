@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Chat - Modular Full-Stack LLM Application</title>
+    <meta name="description" content="Modular Full-Stack LLM Chat application powered by FastAPI, Google Gemini, and the Model Context Protocol (MCP).">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151f33',
+                            950: '#0a0f1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- 1. FIXED HEADER -->
+    <header class="fixed top-0 left-0 right-0 z-30 glass-header h-16 flex items-center px-4 md:px-8 justify-between">
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-black text-sm">
+                MCP
+            </div>
+            <div>
+                <h1 class="text-sm md:text-base font-bold text-slate-100 tracking-tight flex items-center gap-2">
+                    LLM Agent Chat
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/80 uppercase tracking-wider">v1.0</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Powered by Google Gemini &amp; Model Context Protocol</p>
+            </div>
+        </div>
+
+        <!-- Status Indicators & Actions -->
+        <div class="flex items-center gap-2 md:gap-3">
+            <!-- Model Badge -->
+            <div id="model-badge" class="hidden md:flex px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                Gemini 2.5 Flash
+            </div>
+
+            <!-- MCP Status Pill -->
+            <div id="mcp-status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span> MCP Checking...
+            </div>
+
+            <!-- Backend Status Pill -->
+            <div id="backend-status" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span> Backend Checking...
+            </div>
+
+            <!-- Clear Chat Button -->
+            <button id="clear-chat-btn" title="Clear conversation" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 rounded-lg transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. ERROR BANNER (Conditionally shown) -->
+    <div id="error-banner" class="hidden fixed top-16 left-0 right-0 z-20 bg-rose-950/90 border-b border-rose-800 text-rose-200 px-4 py-2 text-xs flex items-center justify-between backdrop-blur-md">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <span id="error-message">Backend connection failed.</span>
+        </div>
+        <button onclick="checkHealth()" class="px-2 py-0.5 rounded bg-rose-900 hover:bg-rose-800 text-white text-[11px] font-medium transition">
+            Retry Connection
+        </button>
+    </div>
+
+    <!-- 3. MAIN CHAT AREA (Scrollable) -->
+    <main class="flex-1 overflow-hidden pt-16 pb-36 md:pb-32 flex justify-center">
+        <div id="chat-messages" class="w-full max-w-4xl h-full overflow-y-auto px-4 md:px-6 py-6 flex flex-col">
+            
+            <!-- Welcome Screen Default State -->
+            <div id="welcome-screen" class="my-auto py-8 text-center max-w-lg mx-auto">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl mx-auto mb-4 shadow-xl shadow-indigo-500/20">
+                    ⚡
+                </div>
+                <h2 class="text-xl md:text-2xl font-bold text-slate-100 mb-2">Modular LLM + MCP Chat</h2>
+                <p class="text-xs md:text-sm text-slate-400 mb-6 leading-relaxed">
+                    A genuine implementation of the <span class="text-indigo-300 font-medium">Model Context Protocol</span>. The Gemini LLM queries the local Python MCP server dynamically to fetch real-time data.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left">
+                    <button onclick="usePromptChip('What is the current time in Tokyo, London, and New York?')" class="prompt-chip p-3 rounded-xl glass-card text-xs text-slate-300 hover:text-white transition">
+                        🕒 <strong>World Time</strong><br><span class="text-slate-400">Time in Tokyo, London &amp; NYC</span>
+                    </button>
+                    <button onclick="usePromptChip('Calculate (256 * 48) + sqrt(144)')" class="prompt-chip p-3 rounded-xl glass-card text-xs text-slate-300 hover:text-white transition">
+                        🧮 <strong>Math Expression</strong><br><span class="text-slate-400">(256 * 48) + sqrt(144)</span>
+                    </button>
+                    <button onclick="usePromptChip('What day of the week is it in India right now?')" class="prompt-chip p-3 rounded-xl glass-card text-xs text-slate-300 hover:text-white transition">
+                        📅 <strong>Local Date &amp; Day</strong><br><span class="text-slate-400">Current day &amp; time in India</span>
+                    </button>
+                    <button onclick="usePromptChip('Calculate 2^16 - 1024')" class="prompt-chip p-3 rounded-xl glass-card text-xs text-slate-300 hover:text-white transition">
+                        ⚡ <strong>Powers &amp; Exponents</strong><br><span class="text-slate-400">Calculate 2^16 - 1024</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 4. STICKY INPUT AREA AT BOTTOM -->
+    <footer class="fixed bottom-0 left-0 right-0 z-20 glass-input-area py-3 px-4 md:px-8 flex justify-center">
+        <div class="w-full max-w-4xl">
+            <form id="chat-form" class="relative flex items-end bg-slate-900 border border-slate-700/80 rounded-2xl p-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all shadow-xl shadow-black/40">
+                <!-- Textarea -->
+                <textarea
+                    id="user-input"
+                    rows="1"
+                    placeholder="Ask a question (e.g. 'What time is it in Tokyo?' or 'Calculate 256 * 48')..."
+                    class="w-full bg-transparent text-slate-100 placeholder-slate-500 px-3 py-2 text-sm focus:outline-none resize-none max-h-36 leading-relaxed"
+                ></textarea>
+
+                <!-- Send Button -->
+                <button
+                    type="submit"
+                    id="send-btn"
+                    class="p-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl flex-shrink-0 transition shadow-md shadow-indigo-600/30 flex items-center justify-center"
+                    aria-label="Send message"
+                >
+                    <svg id="send-icon" class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </form>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 px-2">
+                <span>Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for newline</span>
+                <span>MCP Protocol v1.29 • FastAPI</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script src="js/chat_logic.js"></script>
+</body>
+</html>

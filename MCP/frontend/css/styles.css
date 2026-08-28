@@ -1,0 +1,158 @@
+/* Modern Custom Styles for MCP Chat Application */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: #0f172a;
+    color: #f8fafc;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Glassmorphism Classes */
+.glass-header {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+.glass-input-area {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+/* Message Bubble Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-message {
+    animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Pulsing Status Dot */
+.status-dot-active {
+    background-color: #10b981;
+    box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.status-dot-warning {
+    background-color: #f59e0b;
+    box-shadow: 0 0 10px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.status-dot-error {
+    background-color: #ef4444;
+    box-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Typing Indicator Bounce */
+@keyframes typingBounce {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+.typing-dot:nth-child(1) {
+    animation: typingBounce 1.4s infinite 0s ease-in-out;
+}
+.typing-dot:nth-child(2) {
+    animation: typingBounce 1.4s infinite 0.2s ease-in-out;
+}
+.typing-dot:nth-child(3) {
+    animation: typingBounce 1.4s infinite 0.4s ease-in-out;
+}
+
+/* Code & Pre Formatting inside Markdown */
+pre, code {
+    font-family: var(--font-mono);
+}
+
+.prose pre {
+    background-color: #090d16 !important;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+}
+
+.prose code:not(pre code) {
+    background-color: rgba(51, 65, 85, 0.6);
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    color: #38bdf8;
+}
+
+/* MCP Tool Badge */
+.mcp-tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    margin-bottom: 0.5rem;
+}
+
+/* Quick Prompt Chip */
+.prompt-chip {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-chip:hover {
+    transform: translateY(-1px);
+    border-color: #6366f1;
+    background-color: rgba(99, 102, 241, 0.15);
+    color: #e0e7ff;
+}
